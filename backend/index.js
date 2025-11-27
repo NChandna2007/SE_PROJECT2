@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
 
 const app = express();
 const PORT = 4000;
@@ -7,7 +8,19 @@ const PORT = 4000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ Dummy Users Database
+
+mongoose.connect(
+  "mongodb+srv://jkaur8be24_db_user:Jas1-mongo@pratigya.ejm16ng.mongodb.net/"
+)
+.then(() => console.log(" MongoDB Atlas Connected"))
+.catch(err => console.log(" DB Error:", err));
+
+
+
+const Student = require("./models/Student");
+
+
+
 const users = [
   {
     email: "student@test.com",
@@ -23,10 +36,12 @@ const users = [
   }
 ];
 
+
+
 app.post("/login", (req, res) => {
   const { username, password, rolePage } = req.body;
 
-  console.log("LOGIN ATTEMPT:", username, password); // ✅ Debug log
+  console.log("LOGIN ATTEMPT:", username, password);
 
   const user = users.find(u => u.email === username);
 
@@ -38,7 +53,6 @@ app.post("/login", (req, res) => {
     return res.status(401).json({ message: "Invalid password" });
   }
 
-  // ✅ Volunteer email restriction
   if (user.role === "volunteer" && !user.email.endsWith("@thapar.edu")) {
     return res.status(403).json({
       message: "Only @thapar.edu emails are allowed for volunteers"
@@ -49,7 +63,6 @@ app.post("/login", (req, res) => {
     message: "Login successful",
     redirect: user.redirect,
     user: {
-      username: user.username,
       role: user.role,
       email: user.email
     }
@@ -58,6 +71,24 @@ app.post("/login", (req, res) => {
 
 
 
+app.post("/students/add", async (req, res) => {
+  try {
+    const student = new Student(req.body);
+    await student.save();
+    res.status(201).json({ message: "Student added successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+app.get("/students/all", async (req, res) => {
+  const students = await Student.find();
+  res.json(students);
+});
+
+
 app.listen(PORT, () => {
-  console.log(` Backend running on http://localhost:${PORT}`);
+  console.log(`Backend running on http://localhost:${PORT}`);
 });
