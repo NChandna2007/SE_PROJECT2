@@ -53,22 +53,36 @@
 <div class="content">
     <h2>📤 Upload Your Assignment</h2>
 
-    <div class="box">
-        <h3>Submit Assignment</h3>
+<form id="uploadForm" enctype="multipart/form-data">
+    <label>Select Assignment:</label>
+    <select name="assignmentName">
+        <option>English Project</option>
+        <option>Math Worksheet</option>
+        <option>Science Report</option>
+    </select>
 
-        <label>Select Assignment:</label>
-        <select>
-            <option>English Project</option>
-            <option>Math Worksheet</option>
-            <option>Science Report</option>
-        </select>
+    <label>Upload File:</label>
+    <input type="file" name="file" required>
 
-        <label>Upload File:</label>
-        <input type="file">
+    <button type="submit">Submit Assignment</button>
+</form>
 
-        <button>Submit Assignment</button>
-    </div>
-</div>
+<script>
+document.getElementById("uploadForm").addEventListener("submit", async(e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    formData.append("studentId", "667788999");  // Replace with actual logged-in ID
+    formData.append("studentName", "Riya Sharma"); // dynamic later
 
-</body>
+    const res = await fetch("http://localhost:4000/upload-assignment", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    alert(data.message);
+});
+</script>
+
 </html>

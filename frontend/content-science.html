@@ -109,4 +109,27 @@
 </div>
 
 </body>
+<script>
+fetch("http://localhost:4000/api/content/Science")
+  .then(res => res.json())
+  .then(data => {
+    const container = document.querySelector(".card:nth-of-type(2)");
+
+    // Clear current content
+    container.innerHTML = `
+      <h3>PPT / Notes / Assignments</h3>
+    `;
+
+    data.forEach(item => {
+      container.innerHTML += `
+        <div class="resource">
+          <a href="http://localhost:4000${item.filePath}" target="_blank" style="color:white;">
+            ${item.originalName}
+          </a>
+        </div>
+      `;
+    });
+  });
+</script>
+
 </html>
