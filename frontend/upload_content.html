@@ -60,11 +60,55 @@ button {
     <div class="card">
         <h3>Upload Lecture Materials</h3>
         <p>Upload PPTs, PDFs, Assignments or Videos for students.</p>
+        <label for="subjectSelect">Select Subject:</label>
+    <select id="subjectSelect" style="width:100%; margin:10px 0; padding:8px; border-radius:6px;">
+        <option value="">Choose Subject</option>
+        <option value="English">English</option>
+        <option value="Hindi">hindi</option>
+        <option value="Maths">Maths</option>
+        <option value="Punjabi">punjabi</option>
+        <option value="Science">science</option>
+        <option value="Social Studies">Social Studies</option>
+    </select>
 
-        <input type="file" multiple>
-        <button>Upload Content</button>
+       <input type="file" id="fileInput">
+       <button onclick="uploadFile()">Upload Content</button>
     </div>
 </div>
 
 </body>
+<script>
+async function uploadFile() {
+  const file = document.getElementById("fileInput").files[0];
+  const subject = document.getElementById("subjectSelect").value;
+
+  if (!subject) {
+    alert("Please select a subject");
+    return;
+  }
+
+  if (!file) {
+    alert("Please select a file");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("subject", subject);  // MUST come before file
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("http://localhost:4000/api/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    alert(data.message);
+  } catch (err) {
+    console.error(err);
+    alert("Upload failed. Check console for details.");
+  }
+}
+
+</script>
 </html>

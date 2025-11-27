@@ -4,17 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>View Students | Pratigya Abhiyaan</title>
+
 <style>
 body {
     margin: 0;
     font-family: Arial;
     background: url('https://images.unsplash.com/photo-1711062717294-8902df8cebe3?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmxhY2tib2FyZHxlbnwwfHwwfHx8MA%3D%3D') no-repeat bottom center;
     background-size: cover;
-    min-height: 100%;   
-    background-attachment: fixed; 
+    min-height: 100%;
+    background-attachment: fixed;
     color: white;
 }
-
 
 .sidebar { width:230px; height:100vh; position:fixed; top:0; left:0; background:rgba(0,0,0,0.6); padding-top:20px; backdrop-filter:blur(6px); }
 .sidebar h2 { text-align:center; color:#ecb613; margin-bottom:30px; }
@@ -29,6 +29,7 @@ th { color:#ecb613; }
 button.remove-btn { padding:6px 10px; border:none; border-radius:8px; background:#ff5050; color:white; cursor:pointer; }
 </style>
 </head>
+
 <body>
 
 <div class="sidebar">
@@ -36,53 +37,76 @@ button.remove-btn { padding:6px 10px; border:none; border-radius:8px; background
     <a href="volunteer_dashboard.html">Dashboard</a>
     <a href="manage_students.html" class="active">Manage Students</a>
     <a href="upload_content.html">Upload Content</a>
-     <a href="view_submissions.html">View Submissions</a>
+    <a href="view_submissions.html">View Submissions</a>
     <a href="vprofile.html">Profile</a>
     <a href="#" onclick="confirmLogout()">Logout</a>
 </div>
 
 <div class="content">
     <h2>📄 View Students</h2>
+
     <table>
-        <tr>
-            <th>Name</th>
-            <th>Father's Name</th>
-            <th>Birthdate</th>
-            <th>Address</th>
-            <th>Phone</th>
-            <th>Action</th>
-        </tr>
-        <tr>
-            <td>Aarav Sharma</td>
-            <td>Rohit Sharma</td>
-            <td>12-04-2010</td>
-            <td>Ludhiana</td>
-            <td>9876543210</td>
-            <td><button class="remove-btn" onclick="removeStudent('Aarav Sharma')">Remove</button></td>
-        </tr>
-        <tr>
-            <td>Simran Kaur</td>
-            <td>Harjeet Singh</td>
-            <td>28-09-2011</td>
-            <td>Chandigarh</td>
-            <td>9801234567</td>
-            <td><button class="remove-btn" onclick="removeStudent('Simran Kaur')">Remove</button></td>
-        </tr>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Father</th>
+                <th>DOB</th>
+                <th>Address</th>
+                <th>Phone</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="studentTable"></tbody>
     </table>
 </div>
 
+
 <script>
-function removeStudent(name) {
-    if(confirm(`Are you sure you want to remove ${name}?`)) {
-        alert(`${name} removed successfully!`);
+async function loadStudents() {
+    const res = await fetch("http://localhost:4000/students/all");
+    const students = await res.json();
+
+    let rows = "";
+    students.forEach(s => {
+        rows += `
+        <tr>
+            <td>${s.name}</td>
+            <td>${s.father}</td>
+            <td>${s.dob}</td>
+            <td>${s.address}</td>
+            <td>${s.phone}</td>
+            <td>
+              <button class="remove-btn" onclick="removeStudent('${s._id}')">
+                Remove
+              </button>
+            </td>
+        </tr>`;
+    });
+
+    document.getElementById("studentTable").innerHTML = rows;
+}
+
+
+
+async function removeStudent(id) {
+    if (confirm("Are you sure you want to delete this student?")) {
+        const res = await fetch(`http://localhost:4000/students/delete/${id}`, {
+            method: "DELETE"
+        });
+
+        const data = await res.json();
+        alert(data.message);
+        loadStudents(); 
     }
 }
 
 function confirmLogout() {
-    if(confirm("Are you sure you want to logout?")) {
+    if (confirm("Are you sure you want to logout?")) {
         window.location.href = "logout.html";
     }
 }
+
+loadStudents();
 </script>
 
 </body>
