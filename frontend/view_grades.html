@@ -43,21 +43,41 @@
 
 <div class="content">
     <h2> Your Grades</h2>
-
-
-    <div class="grade-card">
-        <h3>English Project</h3>
-        <p class="score">Marks: <b>85 / 100</b></p>
-        <p class="feedback">Feedback: Well-written story, great creativity!</p>
-    </div>
-
-    <div class="grade-card">
-        <h3>Math Worksheet</h3>
-        <p class="score">Marks: <b>92 / 100</b></p>
-        <p class="feedback">Feedback: Excellent problem-solving.</p>
-    </div>
-
+    <div id="grades"></div>
 </div>
 
 </body>
+<script>
+async function loadGrades() {
+
+    // ✅ HARD-CODED STUDENT (MATCHES UPLOAD PAGE)
+    const studentId = "667788999"; 
+
+    try {
+        const res = await fetch(`http://localhost:4000/student/grades/${studentId}`);
+        const data = await res.json();
+
+        if (!data.length) {
+            document.getElementById("grades").innerHTML =
+                "<p style='color:#ecb613;'>No grades published yet.</p>";
+            return;
+        }
+
+        document.getElementById("grades").innerHTML = data.map(g => `
+            <div class="grade-card">
+                <h3>${g.assignmentName}</h3>
+                <p class="score">Marks: <b>${g.marks} / 100</b></p>
+                <p class="feedback">Feedback: ${g.feedback}</p>
+            </div>
+        `).join("");
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to load grades");
+    }
+}
+
+loadGrades();
+</script>
+
 </html>
