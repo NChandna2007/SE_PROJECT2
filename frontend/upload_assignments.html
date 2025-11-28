@@ -68,20 +68,45 @@
 </form>
 
 <script>
-document.getElementById("uploadForm").addEventListener("submit", async(e) => {
+document.getElementById("uploadForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    formData.append("studentId", "667788999");  // Replace with actual logged-in ID
-    formData.append("studentName", "Riya Sharma"); // dynamic later
 
-    const res = await fetch("http://localhost:4000/upload-assignment", {
-        method: "POST",
-        body: formData
-    });
+    const formData = new FormData();
 
-    const data = await res.json();
-    alert(data.message);
+    const fileInput = document.querySelector('input[type="file"]');
+    const assignmentName = document.querySelector('select').value;
+
+    if (!fileInput.files.length) {
+        alert("Please select a file");
+        return;
+    }
+
+    formData.append("file", fileInput.files[0]);
+    formData.append("assignmentName", assignmentName);
+
+    // ✅ HARDCODED STUDENT (SAFE)
+    formData.append("studentId", "667788999");
+    formData.append("studentName", "Riya Sharma");
+
+    try {
+        const res = await fetch("http://localhost:4000/upload-assignment", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.message || "Upload failed");
+        }
+
+        alert(data.message);
+        document.getElementById("uploadForm").reset();
+
+    } catch (err) {
+        console.error(err);
+        alert("Upload failed: " + err.message);
+    }
 });
 </script>
 

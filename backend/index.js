@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -85,12 +86,21 @@ app.post("/api/upload", upload.fields([{ name: "file" }]), async (req, res) => {
   }
 });
 
-// Student: Upload assignment
 app.post("/upload-assignment", uploadAssignment.single("file"), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
     const { assignmentName, studentId, studentName } = req.body;
 
-    // ✅ Fix: studentId as string instead of ObjectId
+    if (!assignmentName || !studentId || !studentName) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required student data"
+      });
+    }
+
     const submission = new AssignmentSubmission({
       assignmentName,
       studentId: studentId.toString(),
@@ -99,9 +109,11 @@ app.post("/upload-assignment", uploadAssignment.single("file"), async (req, res)
     });
 
     await submission.save();
+
     res.json({ success: true, message: "Assignment submitted successfully!" });
+
   } catch (err) {
-    console.error(err);
+    console.error("UPLOAD ERROR:", err);
     res.status(500).json({ success: false, message: "Upload failed." });
   }
 });
@@ -113,6 +125,23 @@ app.get("/submissions", async (req, res) => {
     res.json(submissions);
   } catch (err) {
     res.status(500).json({ success: false, message: "Failed to fetch submissions." });
+  }
+});
+
+// ==================== Student: View Own Grades ====================
+app.get("/student/grades/:studentId", async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    const grades = await AssignmentSubmission.find({
+      studentId,
+      marks: { $ne: null }   // Only graded assignments
+    }).sort({ submittedAt: -1 });
+
+    res.json(grades);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Failed to fetch grades" });
   }
 });
 
@@ -141,11 +170,10 @@ app.get("/api/content/:subject", async (req, res) => {
 });
 
 // ==================== MongoDB ====================
-mongoose.connect(
-  "mongodb+srv://jkaur8be24_db_user:Jas1-mongo@pratigya.ejm16ng.mongodb.net/pratigya_db"
-)
-.then(() => console.log("MongoDB Atlas Connected"))
-.catch(err => console.log("DB Error:", err));
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB Atlas Connected"))
+  .catch(err => console.log("DB Error:", err));
+
 
 // ==================== Login ====================
 app.post("/login", (req, res) => {
